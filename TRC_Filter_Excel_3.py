@@ -180,163 +180,223 @@ xls_entrylog_counter = 1
 args = parser.parse_args()
 dataLog = []
 for f in args.file:
-    for line in f:
-        line = line.replace("\n","")
-        splittedline = line.split("|")
+    try:
+        for line_num, line in enumerate(f, 1):
+            try:
+                line = line.replace("\n","").strip()
+                if not line:  # Skip empty lines
+                    continue
 
-        #Personal Shop Logger
-        if splittedline[1] == '5115':
-            xls_pslog.write_string(xls_pslog_counter, 0, splittedline[3])
-            xls_pslog.write_string(xls_pslog_counter, 1, splittedline[10])
-            xls_pslog.write_string(xls_pslog_counter, 2, splittedline[4])
-            xls_pslog.write_string(xls_pslog_counter, 3, splittedline[8])
-            xls_pslog.write_string(xls_pslog_counter, 4, splittedline[11])
-            xls_pslog_counter += 1
+                splittedline = line.split("|")
 
-        #Trade Item Logger
-        if splittedline[1] == '5131':
-            xls_tradelog.write_string(xls_tradelog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-            xls_tradelog.write_string(xls_tradelog_counter, 1, splittedline[3])  # SrcCharIDX
-            xls_tradelog.write_string(xls_tradelog_counter, 2, splittedline[10])  # DesCharIDX
-            xls_tradelog.write_string(xls_tradelog_counter, 3, splittedline[4])  # ItemKind
-            xls_tradelog.write_string(xls_tradelog_counter, 4, splittedline[8])  # ItemOpt
-            xls_tradelog.write_string(xls_tradelog_counter, 5, '-')              # Alz
-            xls_tradelog_counter += 1
+                # Skip lines that don't have enough fields
+                if len(splittedline) < 2:
+                    continue
 
-        #Trade Alz Logger
-        if splittedline[1] == '5203':
-            xls_tradelog.write_string(xls_tradelog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-            xls_tradelog.write_string(xls_tradelog_counter, 1, splittedline[3])
-            xls_tradelog.write_string(xls_tradelog_counter, 2, splittedline[7])
-            xls_tradelog.write_string(xls_tradelog_counter, 3, '-')
-            xls_tradelog.write_string(xls_tradelog_counter, 4, '-')
-            xls_tradelog.write_string(xls_tradelog_counter, 5, splittedline[5])
-            xls_tradelog_counter += 1
+                # Skip lines where the second field (event type) is empty
+                if not splittedline[1].strip():
+                    continue
 
-        #Auction House Logger
-        if splittedline[1] == '51044':
-            totalprice = str(int(splittedline[11]) * int(splittedline[12]))
-            xls_ahlog.write_string(xls_ahlog_counter, 0, splittedline[10])
-            xls_ahlog.write_string(xls_ahlog_counter, 1, splittedline[3]) #
-            xls_ahlog.write_string(xls_ahlog_counter, 2, splittedline[6])
-            xls_ahlog.write_string(xls_ahlog_counter, 3, splittedline[7])
-            xls_ahlog.write_string(xls_ahlog_counter, 4, splittedline[11])
-            xls_ahlog.write_string(xls_ahlog_counter, 5, splittedline[12])
-            xls_ahlog.write_string(xls_ahlog_counter, 6, totalprice)
-            xls_ahlog_counter += 1
-        
-        #Guild Warehouse Item Logger
-        if splittedline[1] == '51049':
-            xls_gwhlog.write_string(xls_gwhlog_counter, 0, splittedline[5])
-            xls_gwhlog.write_string(xls_gwhlog_counter, 1, splittedline[6])
-            if splittedline[11] == '0':
-                xls_gwhlog.write_string(xls_gwhlog_counter, 2, 'In')
-            else:
-                xls_gwhlog.write_string(xls_gwhlog_counter, 2, 'Out')
-            xls_gwhlog.write_string(xls_gwhlog_counter, 3, splittedline[4])
-            xls_gwhlog.write_string(xls_gwhlog_counter, 4, splittedline[8])
-            xls_gwhlog.write_string(xls_gwhlog_counter, 5, splittedline[13])
-            xls_gwhlog.write_string(xls_gwhlog_counter, 6, '-')
-            xls_gwhlog_counter += 1
+                #Personal Shop Logger
+                if len(splittedline) >= 12 and splittedline[1] == '5115':
+                    try:
+                        xls_pslog.write_string(xls_pslog_counter, 0, splittedline[3])
+                        xls_pslog.write_string(xls_pslog_counter, 1, splittedline[10])
+                        xls_pslog.write_string(xls_pslog_counter, 2, splittedline[4])
+                        xls_pslog.write_string(xls_pslog_counter, 3, splittedline[8])
+                        xls_pslog.write_string(xls_pslog_counter, 4, splittedline[11])
+                        xls_pslog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 5115 entry: {e}")
+                        continue
 
-        #Guild Warehouse Alz Logger
-        if splittedline[1] == '10953':
-            xls_gwhlog.write_string(xls_gwhlog_counter, 0, splittedline[4])
-            xls_gwhlog.write_string(xls_gwhlog_counter, 1, splittedline[3])
-            if splittedline[7] == '0':
-                xls_gwhlog.write_string(xls_gwhlog_counter, 2, 'In')
-            else:
-                xls_gwhlog.write_string(xls_gwhlog_counter, 2, 'Out')
-            xls_gwhlog.write_string(xls_gwhlog_counter, 3, '-')
-            xls_gwhlog.write_string(xls_gwhlog_counter, 4, '-')
-            xls_gwhlog.write_string(xls_gwhlog_counter, 5, '-')
-            xls_gwhlog.write_string(xls_gwhlog_counter, 6, splittedline[9])
-            xls_gwhlog_counter += 1
+                #Trade Item Logger
+                if len(splittedline) >= 11 and splittedline[1] == '5131':
+                    try:
+                        xls_tradelog.write_string(xls_tradelog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
+                        xls_tradelog.write_string(xls_tradelog_counter, 1, splittedline[3])  # SrcCharIDX
+                        xls_tradelog.write_string(xls_tradelog_counter, 2, splittedline[10])  # DesCharIDX
+                        xls_tradelog.write_string(xls_tradelog_counter, 3, splittedline[4])  # ItemKind
+                        xls_tradelog.write_string(xls_tradelog_counter, 4, splittedline[8])  # ItemOpt
+                        xls_tradelog.write_string(xls_tradelog_counter, 5, '-')              # Alz
+                        xls_tradelog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 5131 entry: {e}")
+                        continue
 
-        #Mail Item Logger
-        if splittedline[1] == '51019':
-            xls_maillog.write_string(xls_maillog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-            xls_maillog.write_string(xls_maillog_counter, 1, splittedline[3])
-            xls_maillog.write_string(xls_maillog_counter, 2, splittedline[12])
-            xls_maillog.write_string(xls_maillog_counter, 3, splittedline[4])
-            xls_maillog.write_string(xls_maillog_counter, 4, splittedline[8])
-            xls_maillog.write_string(xls_maillog_counter, 5, '-')
-            xls_maillog.write_string(xls_maillog_counter, 6, splittedline[13])
-            xls_maillog_counter += 1
+                #Trade Alz Logger
+                if len(splittedline) >= 8 and splittedline[1] == '5203':
+                    try:
+                        xls_tradelog.write_string(xls_tradelog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
+                        xls_tradelog.write_string(xls_tradelog_counter, 1, splittedline[3])
+                        xls_tradelog.write_string(xls_tradelog_counter, 2, splittedline[7])
+                        xls_tradelog.write_string(xls_tradelog_counter, 3, '-')
+                        xls_tradelog.write_string(xls_tradelog_counter, 4, '-')
+                        xls_tradelog.write_string(xls_tradelog_counter, 5, splittedline[5])
+                        xls_tradelog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 5203 entry: {e}")
+                        continue
 
-        #Mail Alz Logger
-        if splittedline[1] == '5361':
-            xls_maillog.write_string(xls_maillog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-            xls_maillog.write_string(xls_maillog_counter, 1, splittedline[3])
-            xls_maillog.write_string(xls_maillog_counter, 2, splittedline[8])
-            xls_maillog.write_string(xls_maillog_counter, 3, '-')
-            xls_maillog.write_string(xls_maillog_counter, 4, '-')
-            xls_maillog.write_string(xls_maillog_counter, 5, splittedline[5])
-            xls_maillog.write_string(xls_maillog_counter, 6, splittedline[9])
-            xls_maillog_counter += 1
+                #Auction House Logger
+                if len(splittedline) >= 13 and splittedline[1] == '51044':
+                    try:
+                        totalprice = str(int(splittedline[11]) * int(splittedline[12]))
+                        xls_ahlog.write_string(xls_ahlog_counter, 0, splittedline[10])
+                        xls_ahlog.write_string(xls_ahlog_counter, 1, splittedline[3]) #
+                        xls_ahlog.write_string(xls_ahlog_counter, 2, splittedline[6])
+                        xls_ahlog.write_string(xls_ahlog_counter, 3, splittedline[7])
+                        xls_ahlog.write_string(xls_ahlog_counter, 4, splittedline[11])
+                        xls_ahlog.write_string(xls_ahlog_counter, 5, splittedline[12])
+                        xls_ahlog.write_string(xls_ahlog_counter, 6, totalprice)
+                        xls_ahlog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 51044 entry: {e}")
+                        continue
+                #Guild Warehouse Item Logger
+                if len(splittedline) >= 14 and splittedline[1] == '51049':
+                    try:
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 0, splittedline[5])
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 1, splittedline[6])
+                        if splittedline[11] == '0':
+                            xls_gwhlog.write_string(xls_gwhlog_counter, 2, 'In')
+                        else:
+                            xls_gwhlog.write_string(xls_gwhlog_counter, 2, 'Out')
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 3, splittedline[4])
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 4, splittedline[8])
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 5, splittedline[13])
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 6, '-')
+                        xls_gwhlog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 51049 entry: {e}")
+                        continue
 
-        #Throw/Pickup Logger
-        #THIS TAKE TONS OF TIME To RUN, ENABLE IT IF REALLY NEEDED!
-        if enablethrowlog == '1':
-            if splittedline[1] == '5101' or splittedline[1] == '5102':
-                xls_throwlog.write_string(xls_throwlog_counter, 0, splittedline[3])  # CharacterIDX
+                #Guild Warehouse Alz Logger
+                if len(splittedline) >= 10 and splittedline[1] == '10953':
+                    try:
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 0, splittedline[4])
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 1, splittedline[3])
+                        if splittedline[7] == '0':
+                            xls_gwhlog.write_string(xls_gwhlog_counter, 2, 'In')
+                        else:
+                            xls_gwhlog.write_string(xls_gwhlog_counter, 2, 'Out')
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 3, '-')
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 4, '-')
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 5, '-')
+                        xls_gwhlog.write_string(xls_gwhlog_counter, 6, splittedline[9])
+                        xls_gwhlog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 10953 entry: {e}")
+                        continue
 
-                # Different field positions for 5101 vs 5102
-                if splittedline[1] == '5101':
-                    xls_throwlog.write_string(xls_throwlog_counter, 1, splittedline[8])   # ItemKind
-                    xls_throwlog.write_string(xls_throwlog_counter, 2, splittedline[9])   # ItemOpt
-                elif splittedline[1] == '5102':
-                    xls_throwlog.write_string(xls_throwlog_counter, 1, splittedline[9])   # ItemKind
-                    xls_throwlog.write_string(xls_throwlog_counter, 2, splittedline[10])  # ItemOpt
+                #Mail Item Logger
+                if len(splittedline) >= 14 and splittedline[1] == '51019':
+                    try:
+                        xls_maillog.write_string(xls_maillog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
+                        xls_maillog.write_string(xls_maillog_counter, 1, splittedline[3])
+                        xls_maillog.write_string(xls_maillog_counter, 2, splittedline[12])
+                        xls_maillog.write_string(xls_maillog_counter, 3, splittedline[4])
+                        xls_maillog.write_string(xls_maillog_counter, 4, splittedline[8])
+                        xls_maillog.write_string(xls_maillog_counter, 5, '-')
+                        xls_maillog.write_string(xls_maillog_counter, 6, splittedline[13])
+                        xls_maillog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 51019 entry: {e}")
+                        continue
 
-                if splittedline[1] == '5101':
-                    xls_throwlog.write_string(xls_throwlog_counter, 3, 'Throw')
-                elif splittedline[1] == '5102':
-                    xls_throwlog.write_string(xls_throwlog_counter, 3, 'Pickup')
-                xls_throwlog_counter += 1
+                #Mail Alz Logger
+                if len(splittedline) >= 10 and splittedline[1] == '5361':
+                    try:
+                        xls_maillog.write_string(xls_maillog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
+                        xls_maillog.write_string(xls_maillog_counter, 1, splittedline[3])
+                        xls_maillog.write_string(xls_maillog_counter, 2, splittedline[8])
+                        xls_maillog.write_string(xls_maillog_counter, 3, '-')
+                        xls_maillog.write_string(xls_maillog_counter, 4, '-')
+                        xls_maillog.write_string(xls_maillog_counter, 5, splittedline[5])
+                        xls_maillog.write_string(xls_maillog_counter, 6, splittedline[9])
+                        xls_maillog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 5361 entry: {e}")
+                        continue
 
-        #NoEntryHackDetector
-        # if splittedline[1] == '5104':
-        #     xls_entrylog.write_string(xls_entrylog_counter, 0, splittedline[0])
-        #     xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[2])
-        #     action = "Move Item Id: " + splittedline[3] + " ItemOpt: " + splittedline[4] + " From: " + splittedline[6] + " slot."
-        #     xls_entrylog.write_string(xls_entrylog_counter, 2, action)
-        #     xls_entrylog_counter += 1
-        #
-        # if splittedline[1] == '5105':
-        #     xls_entrylog.write_string(xls_entrylog_counter, 0, splittedline[0])
-        #     xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[2])
-        #     action = "Move Item Id: " + splittedline[3] + " ItemOpt: " + splittedline[4] + " To: " + splittedline[6] + " slot."
-        #     xls_entrylog.write_string(xls_entrylog_counter, 2, action)
-        #     xls_entrylog_counter += 1
+                #Throw/Pickup Logger
+                #THIS TAKE TONS OF TIME To RUN, ENABLE IT IF REALLY NEEDED!
+                if enablethrowlog == '1':
+                    if len(splittedline) >= 11 and (splittedline[1] == '5101' or splittedline[1] == '5102'):
+                        try:
+                            xls_throwlog.write_string(xls_throwlog_counter, 0, splittedline[3])  # CharacterIDX
 
-        if splittedline[1] == '51022':
-            xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-            xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[2])
-            action = "Dungeon entry used: " + splittedline[3] + "-" + splittedline[4] + ". Slot: " + splittedline[7] + " Dungeon: " + splittedline[8] + "."
-            xls_entrylog.write_string(xls_entrylog_counter, 2, action)
-            xls_entrylog_counter += 1
+                            # Different field positions for 5101 vs 5102
+                            if splittedline[1] == '5101':
+                                xls_throwlog.write_string(xls_throwlog_counter, 1, splittedline[8])   # ItemKind
+                                xls_throwlog.write_string(xls_throwlog_counter, 2, splittedline[9])   # ItemOpt
+                            elif splittedline[1] == '5102':
+                                xls_throwlog.write_string(xls_throwlog_counter, 1, splittedline[9])   # ItemKind
+                                xls_throwlog.write_string(xls_throwlog_counter, 2, splittedline[10])  # ItemOpt
 
-        if splittedline[1] == '6167':
-            xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-            xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[2])
-            action = "Dungeon: " + splittedline[3] + " started."
-            xls_entrylog.write_string(xls_entrylog_counter, 2, action)
-            xls_entrylog_counter += 1
+                            if splittedline[1] == '5101':
+                                xls_throwlog.write_string(xls_throwlog_counter, 3, 'Throw')
+                            elif splittedline[1] == '5102':
+                                xls_throwlog.write_string(xls_throwlog_counter, 3, 'Pickup')
+                            xls_throwlog_counter += 1
+                        except (IndexError, ValueError) as e:
+                            print(f"Warning: Skipping malformed 5101/5102 entry: {e}")
+                            continue
 
-        if splittedline[1] == '9':
-            xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-            xls_entrylog.write_string(xls_entrylog_counter, 1, "-")
-            action = "Disconnect from IP: " + splittedline[2] + "."
-            xls_entrylog.write_string(xls_entrylog_counter, 2, action)
-            xls_entrylog_counter += 1
+                #Dungeon entry logger
+                if len(splittedline) >= 9 and splittedline[1] == '51022':
+                    try:
+                        xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
+                        xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[2])
+                        action = "Dungeon entry used: " + splittedline[3] + "-" + splittedline[4] + ". Slot: " + splittedline[7] + " Dungeon: " + splittedline[8] + "."
+                        xls_entrylog.write_string(xls_entrylog_counter, 2, action)
+                        xls_entrylog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 51022 entry: {e}")
+                        continue
 
-        if splittedline[1] == '9103':
-            xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-            xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[3])
-            action = "Characteridx: " + splittedline[3] + " entered the channel."
-            xls_entrylog.write_string(xls_entrylog_counter, 2, action)
-            xls_entrylog_counter += 1
+                #Dungeon start logger
+                if len(splittedline) >= 4 and splittedline[1] == '6167':
+                    try:
+                        xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
+                        xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[2])
+                        action = "Dungeon: " + splittedline[3] + " started."
+                        xls_entrylog.write_string(xls_entrylog_counter, 2, action)
+                        xls_entrylog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 6167 entry: {e}")
+                        continue
+
+                #Connection logs
+                if len(splittedline) >= 3 and splittedline[1] == '9':
+                    try:
+                        xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
+                        xls_entrylog.write_string(xls_entrylog_counter, 1, "-")
+                        action = "Disconnect from IP: " + splittedline[2] + "."
+                        xls_entrylog.write_string(xls_entrylog_counter, 2, action)
+                        xls_entrylog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 9 entry: {e}")
+                        continue
+
+                if len(splittedline) >= 4 and splittedline[1] == '9103':
+                    try:
+                        xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
+                        xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[3])
+                        action = "Characteridx: " + splittedline[3] + " entered the channel."
+                        xls_entrylog.write_string(xls_entrylog_counter, 2, action)
+                        xls_entrylog_counter += 1
+                    except (IndexError, ValueError) as e:
+                        print(f"Warning: Skipping malformed 9103 entry: {e}")
+                        continue
+
+            except Exception as e:
+                print(f"Warning: Error processing line {line_num}: {e}")
+                continue
+
+    except Exception as e:
+        print(f"Error processing file {f}: {e}")
+        continue
 
 #Closing the Excel file.
 workbook.close()
