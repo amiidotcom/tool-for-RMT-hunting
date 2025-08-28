@@ -308,4 +308,8 @@ When reporting problems, include:
 
 *This system helps game administrators and analysts process TRC logs efficiently for player behavior analysis, economy monitoring, and server performance insights.*
 
+*This update for fully support EP33/35
+
+*For EP8 Please use TRC_Filter_Excel_3_EP8.py
+
 Credits to @PwrDex for source
