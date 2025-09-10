@@ -344,11 +344,11 @@ for f in args.file:
                             continue
 
                 #Dungeon entry logger
-                if len(splittedline) >= 9 and splittedline[1] == '51022':
+                if len(splittedline) >= 12 and splittedline[1] == '51022':
                     try:
                         xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-                        xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[2])
-                        action = "Dungeon entry used: " + splittedline[3] + "-" + splittedline[4] + ". Slot: " + splittedline[7] + " Dungeon: " + splittedline[8] + "."
+                        xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[3])
+                        action = "Dungeon entry used: " + splittedline[4] + "-" + splittedline[9] + ". Slot: " + splittedline[12] + " Dungeon: " + splittedline[6] + "."
                         xls_entrylog.write_string(xls_entrylog_counter, 2, action)
                         xls_entrylog_counter += 1
                     except (IndexError, ValueError) as e:
@@ -359,8 +359,8 @@ for f in args.file:
                 if len(splittedline) >= 4 and splittedline[1] == '6167':
                     try:
                         xls_entrylog.write_string(xls_entrylog_counter, 0, datetime.fromtimestamp(int(splittedline[0])).strftime('%Y-%m-%d %H:%M:%S'))
-                        xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[2])
-                        action = "Dungeon: " + splittedline[3] + " started."
+                        xls_entrylog.write_string(xls_entrylog_counter, 1, splittedline[3])
+                        action = "Dungeon: " + splittedline[4] + " started."
                         xls_entrylog.write_string(xls_entrylog_counter, 2, action)
                         xls_entrylog_counter += 1
                     except (IndexError, ValueError) as e:
